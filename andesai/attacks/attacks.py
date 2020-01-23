@@ -1,3 +1,4 @@
+import math
 from collections import namedtuple
 
 import torch
@@ -11,6 +12,12 @@ DATASET_CONFIG = {
     'cifar10': DC([0.49139968, 0.48215841, 0.44653091], [0.24703223, 0.24348513, 0.26158784], 32, 10),
     'imagenet100': DC([0.485, 0.456, 0.406], [0.229, 0.224, 0.225], 224, 100)
 } 
+
+def get_step_size(epsilon, n_iters, use_max=False):
+    if use_max:
+        return epsilon
+    else:
+        return epsilon / math.sqrt(n_iters)
 
 def get_eps_params(base_eps, resol):
     eps_list = []
