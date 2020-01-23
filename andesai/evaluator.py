@@ -222,8 +222,8 @@ class Evaluator(object):
         # raw accuracy (before rejection)
         raw_acc_top1, raw_acc_top5 = self._compute_multi_classification_accuracy(h, t)
         if get_top5:
-            eval_dict['{key}'.format(key='raw accuracy top1' if r_binary is not None else 'accuracy top1')] = raw_acc_top1
             eval_dict['{key}'.format(key='raw accuracy top5' if r_binary is not None else 'accuracy top5')] = raw_acc_top5
+            eval_dict['{key}'.format(key='raw accuracy top1' if r_binary is not None else 'accuracy top1')] = raw_acc_top1
         else:
             eval_dict['{key}'.format(key='raw accuracy' if r_binary is not None else 'accuracy')] = raw_acc_top1
 
@@ -239,8 +239,8 @@ class Evaluator(object):
             # accuracy (after rejection)
             acc_top1, acc_top5 = self._compute_multi_classification_accuracy(h_rjc, t_rjc)
             if get_top5:
-                eval_dict['accuracy top1'] = acc_top1
                 eval_dict['accuracy top5'] = acc_top5
+                eval_dict['accuracy top1'] = acc_top1
             else:
                 eval_dict['accuracy'] = acc_top1
         else:
