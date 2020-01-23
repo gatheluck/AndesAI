@@ -23,9 +23,6 @@ class PGDAttack(AttackWrapper):
             rand_init (bool):      Whether to init randomly in the norm ball
             scale_each (bool):     Whether to scale eps for each image in a batch separately
         """
-        if trg_loss not in ['both', 'rjc', 'cls']:
-            raise ValueError 
-
         super().__init__(dataset)
         self.nb_its = nb_its
         self.eps_max = eps_max
@@ -45,7 +42,7 @@ class PGDAttack(AttackWrapper):
         
         for it in range(self.nb_its):
             loss = self.criterion(out, target)
-            loss.backward()
+            loss.backward(retain_graph=True)
             '''
             Because of batching, this grad is scaled down by 1 / batch_size, which does not matter
             for what follows because of normalization.
