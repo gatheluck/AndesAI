@@ -1,17 +1,16 @@
+import os
+import sys
 import math
-from collections import namedtuple
+
+base = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
+sys.path.append(base)
 
 import torch
 import torch.nn as nn
 import torchvision
 
-# dataset data
-DC = namedtuple('DatasetConfig', ['mean', 'std', 'input_size', 'num_classes'])
-DATASET_CONFIG = {
-    'svhn' :   DC([0.43768210, 0.44376970, 0.47280442], [0.19803012, 0.20101562, 0.19703614], 32, 10),
-    'cifar10': DC([0.49139968, 0.48215841, 0.44653091], [0.24703223, 0.24348513, 0.26158784], 32, 10),
-    'imagenet100': DC([0.485, 0.456, 0.406], [0.229, 0.224, 0.225], 224, 100)
-} 
+from andesai.data import DatasetBuilder
+DATASET_CONFIG = DatasetBuilder.DATASET_CONFIG
 
 def get_step_size(epsilon, n_iters, use_max=False):
     if use_max:
@@ -101,6 +100,7 @@ class AttackWrapper(nn.Module):
             raise ValueError('dataset name is invalid')
 
         self.dataset = dataset
+        self.resol = DATASET_CONFIG[dataset].input_size
         self.transform = DatasetTransform(dataset)
         self.inverse_transform = InverseDatasetTransform(dataset)
         self.epoch = 0

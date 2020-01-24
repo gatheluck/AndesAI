@@ -15,10 +15,10 @@ class PGDAttack(AttackWrapper):
     def __init__(self, nb_its, eps_max, step_size, dataset, norm='linf', rand_init=True, scale_each=False):
         """
         Parameters:
+            dataset (str):         dataset name
             nb_its (int):          Number of PGD iterations.
             eps_max (float):       The max norm, in pixel space.
             step_size (float):     The max step size, in pixel space.
-            dataset (str):         dataset name
             norm (str):            Either 'linf' or 'l2'
             rand_init (bool):      Whether to init randomly in the norm ball
             scale_each (bool):     Whether to scale eps for each image in a batch separately
@@ -27,7 +27,6 @@ class PGDAttack(AttackWrapper):
         self.nb_its = nb_its
         self.eps_max = eps_max
         self.step_size = step_size
-        self.dataset = dataset
         self.norm = norm
         self.rand_init = rand_init
         self.scale_each = scale_each
@@ -118,59 +117,3 @@ class PGDAttack(AttackWrapper):
             delta.data = torch.clamp(pixel_inp.data + delta.data, 0., 255.) - pixel_inp.data
         pixel_result = pixel_inp + delta
         return pixel_result
-
-if __name__ == '__main__':
-    from selectivenet.vgg_variant import vgg16_variant
-    from selectivenet.model import SelectiveNet
-    from selectivenet.loss import SelectiveLoss
-    from selectivenet.data import DatasetBuilder
-    from external.dada.io import load_model
-
-    # dataset
-    dataset_builder = DatasetBuilder(name='cifar10', root_path='../../../../data')
-    test_dataset   = dataset_builder(train=False, normalize=True)
-    test_loader    = torch.utils.data.DataLoader(test_dataset, batch_size=8, shuffle=False, num_workers=16, pin_memory=True)
-
-    # model
-    features = vgg16_variant(dataset_builder.input_size, 0.3).cuda()
-    model = SelectiveNet(features, 512, dataset_builder.num_classes).cuda()
-
-    weight_path = '../../../../logs/abci/cifar10_ex01/0f7d6935b74b42c0a705dd241635d76b/weight_final_coverage_0.70.pth'
-    load_model(model, weight_path)
-    if torch.cuda.device_count() > 1: model = torch.nn.DataParallel(model)
-
-    # attacker
-    attacker = PGDAttackVariant(10, 32, 30, 'cifar10', coverage=0.7, trg_loss='both')
-
-    # test
-    for i, (x,t) in enumerate(test_loader):
-        model.eval()
-        x = x.to('cuda', non_blocking=True)
-        t = t.to('cuda', non_blocking=True)
-
-        x_adv = attacker(model, x, t)
-
-        with torch.autograd.no_grad():
-            # forward
-            class_std, select_std, aux_std = model(x)
-            class_adv, select_adv, aux_adv = model(x_adv)
-
-            print('std: {}/{} corrects'.format((t==torch.argmax(class_std, dim=1)).sum(), t.size(0)))
-            print('adv: {}/{} corrects'.format((t==torch.argmax(class_adv, dim=1)).sum(), t.size(0)))
-            print('select diff: {}'.format(torch.norm(select_std-select_adv)))
-
-            # print('std: {}, {}'.format(torch.argmax(class_std, dim=1), select_std))
-            # print('adv: {}, {}'.format(torch.argmax(class_adv, dim=1), select_adv))
-
-            raise NotImplementedError
-
-            # evaluator
-            # evaluator = Evaluator(out_class.detach(), t.detach(), out_select.detach())
-
-            # # compute selective loss
-            # eval_dict = OrderedDict()
-            # eval_dict.update(evaluator())
-            # print(eval_dict)
-
-
-    attacker = PGDAttackVariant()
