@@ -17,6 +17,7 @@ class DatasetBuilder(object):
         'svhn' :       DC([0.43768210, 0.44376970, 0.47280442], [0.19803012, 0.20101562, 0.19703614], 32, 10),
         'cifar10':     DC([0.49139968, 0.48215841, 0.44653091], [0.24703223, 0.24348513, 0.26158784], 32, 10),
         'imagenet100': DC([0.485, 0.456, 0.406], [0.229, 0.224, 0.225], 224, 100),
+        'imagenet':    DC([0.485, 0.456, 0.406], [0.229, 0.224, 0.225], 224, 1000),
     } 
 
     def __init__(self, name:str, root_path:str):
@@ -48,6 +49,9 @@ class DatasetBuilder(object):
         elif self.name == 'cifar10':
             dataset = torchvision.datasets.CIFAR10(root=self.root_path, train=train, transform=transform, download=True)
             targets_name = 'targets'
+        elif self.name in 'imagenet100 imagenet'.split():
+            root = os.path.join(self.root_path, 'train' if train else 'val')
+            dataset = torchvision.datasets.ImageFolder(root, transform=transform)
         else: 
             raise NotImplementedError 
 
@@ -62,16 +66,37 @@ class DatasetBuilder(object):
         return dataset
 
     def _get_trainsform(self, name:str, input_size:int, train:bool, normalize:bool):
+        """
+        input_size
+        - cifar10, svhn: 32x32
+        - imagenet100, imagenet: 224x224  
+        """
         transform = []
 
         # arugmentation
-        if train:
-            transform.extend([
-                torchvision.transforms.RandomHorizontalFlip(),
-            ])
-
+        # imagenet100 / imagenet
+        if input_size == 224:
+            if train:
+                transform.extend([
+                    torchvision.transforms.RandomResizedCrop(224),
+				    torchvision.transforms.RandomHorizontalFlip(),
+                ])
+            else:
+                transform.extend([
+                    torchvision.transforms.Resize(256),
+                    torchvision.transforms.CenterCrop(224),
+                ])
+        # cifar10 / svhn
+        elif input_size == 32:
+            if train:
+                transform.extend([
+                    torchvision.transforms.RandomHorizontalFlip(),
+                    transforms.RandomCrop(32, 4),
+                ])
+            else:
+                pass
         else:
-            pass
+            raise NotImplementedError
 
         # to tensor
         transform.extend([torchvision.transforms.ToTensor(),])
