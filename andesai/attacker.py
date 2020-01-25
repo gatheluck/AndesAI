@@ -15,9 +15,9 @@ class AttackerBuilder():
     ATTACK_CONFIG = {
         'pgd':          AC(norms=['linf', 'l2']),
         'fw':           AC(norms=['l1']),
-        'cw':           AC(norms=['l2']),
-        'deepfool':     AC(norms=['l1 l2']),
-        'smoothfool':   AC(norms=['l1 l2']),
+        # 'cw':           AC(norms=['l2']),
+        # 'deepfool':     AC(norms=['l1 l2']),
+        # 'smoothfool':   AC(norms=['l1 l2']),
         'elastic':      AC(norms=['linf']),
     }
 
