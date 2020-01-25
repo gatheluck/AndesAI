@@ -64,22 +64,19 @@ def test(**kwargs):
 
     # model (load from checkpoint) 
     num_classes = dataset_builder.num_classes
-    model = ModelBuilder(num_classes=num_classes, pretrained=False)[FLAGS.arch]
-    print(model)
-    model = model.to('cuda')
-    raise NotImplementedError
+    model = ModelBuilder(num_classes=num_classes, pretrained=False)[FLAGS.arch].cuda()
     load_model(model, FLAGS.weight)
     if torch.cuda.device_count() > 1: model = torch.nn.DataParallel(model)
 
     # adversarial attack
-    if FLAGS.at and FLAGS.at_eps>0:    
+    if FLAGS.attack and FLAGS.attack_eps>0:    
         # get step_size
-        step_size = get_step_size(FLAGS.at_eps, FLAGS.nb_its) if not FLAGS.step_size else FLAGS.step_size
+        step_size = get_step_size(FLAGS.attack_eps, FLAGS.nb_its) if not FLAGS.step_size else FLAGS.step_size
         FLAGS._dict['step_size'] = step_size
         assert step_size>=0
 
         # create attacker
-        attacker = AttackerBuilder()(**FLAGS._dict)
+        attacker = AttackerBuilder()(method=FLAGS.attack, norm=FLAGS.attack_norm, eps=FLAGS.attack_eps, **FLAGS._dict)
     
     # pre epoch misc
     test_metric_dict = MetricDict()
@@ -107,7 +104,7 @@ def test(**kwargs):
             loss_dict['loss'] = ce_loss
 
             # evaluation
-            evaluator = Evaluator(out_class.detach(), t.detach(), selection_out=None)
+            evaluator = Evaluator(logit.detach(), t.detach(), selection_out=None)
             loss_dict.update(evaluator())
 
         test_metric_dict.update(loss_dict)
