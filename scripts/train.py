@@ -95,7 +95,7 @@ def train(**kwargs):
         assert step_size>=0
 
         # create attacker
-        attacker = AttackerBuilder()(**FLAGS._dict)
+        attacker = AttackerBuilder()(method=FLAGS.at, norm=FLAGS.at_norm, eps=FLAGS.at_eps, **FLAGS._dict)
 
     # logger
     train_logger = Logger(path=os.path.join(FLAGS.log_dir,'train_log{}.csv'.format(FLAGS.suffix)), mode='train', use_wandb=False, flags=FLAGS._dict)
