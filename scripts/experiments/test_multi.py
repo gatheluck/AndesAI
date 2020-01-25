@@ -27,6 +27,7 @@ from andesai.config import AT_PARAMS
 # data
 @click.option('-d', '--dataset', type=str, required=True)
 @click.option('--dataroot', type=str, default='../data', help='path to dataset root')
+@click.option('-N', '--batch_size', type=int, default=1024)
 # adversarial attack
 @click.option('--attack', type=str, required=True)
 @click.option('--attack_norm', type=str, required=True)
@@ -122,6 +123,7 @@ def test_multi(**kwargs):
             kw_args['weight'] = weight_path
             kw_args['dataset'] = FLAGS.dataset
             kw_args['dataroot'] = FLAGS.dataroot
+            kw_args['batch_size'] = FLAGS.batch_size
             kw_args['attack'] = FLAGS.attack
             kw_args['attack_eps'] = attack_eps
             kw_args['attack_norm'] = FLAGS.attack_norm
@@ -130,7 +132,6 @@ def test_multi(**kwargs):
 
             # default args
             kw_args['num_workers'] = 8
-            kw_args['batch_size'] = 512
             kw_args['normalize'] = True
             
             # run test
