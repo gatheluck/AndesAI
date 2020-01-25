@@ -24,20 +24,20 @@ class AttackerBuilder():
     def __init__(self):
         pass
 
-    def __call__(self, at:str, at_norm:str, at_eps:float, nb_its:int, step_size:float, dataset:str, **kwargs):
-        assert at_eps > 0.0
+    def __call__(self, method:str, norm:str, eps:float, nb_its:int, step_size:float, dataset:str, **kwargs):
+        assert eps > 0.0
         assert nb_its > 0
         assert step_size > 0.0
 
         # check invalid attack name and norm
-        if at+'-'+at_norm not in self.attacks_with_norm: 
+        if method+'-'+norm not in self.attacks_with_norm: 
             raise ValueError()
 
-        if   at == 'pgd':
-            attacker = PGDAttack(dataset=dataset, nb_its=nb_its, eps_max=at_eps, step_size=step_size, norm=at_norm)
-        elif at == 'fw':
-            attacker = FrankWolfeAttack(dataset=dataset, nb_its=nb_its, eps_max=at_eps)
-        elif at == 'elastic':
+        if   method == 'pgd':
+            attacker = PGDAttack(dataset=dataset, nb_its=nb_its, eps_max=eps, step_size=step_size, norm=norm)
+        elif method == 'fw':
+            attacker = FrankWolfeAttack(dataset=dataset, nb_its=nb_its, eps_max=eps)
+        elif method == 'elastic':
             attacker = ElasticAttack(dataset=dataset, nb_its=nb_its, eps_max=eps_max, step_size=step_size)
         else:
             raise NotImplementedError
@@ -67,9 +67,9 @@ if __name__ == "__main__":
     
     flags = {
         'dataset': 'cifar10',
-        'at': 'fw',
-        'at_norm': 'l1',
-        'at_eps': 8.0,
+        'method': 'fw',
+        'norm': 'l1',
+        'eps': 8.0,
         'nb_its': 10,
         'step_size': 0.8, 
     }
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         t = t.to('cuda', non_blocking=True)
 
         # adversarial attack
-        if flags['at'] and flags['at_eps']>0:
+        if flags['method'] and flags['eps']>0:
             model.eval()
             model.zero_grad()
             x = attacker(model, x.detach(), t.detach())
