@@ -21,6 +21,7 @@ from andesai.attacks.attacks import get_step_size
 from andesai.model import ModelBuilder
 from andesai.data import DatasetBuilder
 from andesai.attacker import AttackerBuilder
+from andesai.transforms.patch_shuffle import PatchSuffle
 from andesai.evaluator import Evaluator
 
 # options
@@ -41,7 +42,8 @@ from andesai.evaluator import Evaluator
 @click.option('--attack_eps', type=float, default=0.0)
 @click.option('--nb_its', type=int, default=50)
 @click.option('--step_size', type=float, default=None)
-
+# optional transform
+@click.option('--num_divide', type=int, default=0, help='number of patches which is used in PatchShuffle')
 
 def main(**kwargs):
     test(**kwargs)
@@ -54,12 +56,19 @@ def test(**kwargs):
     FLAGS.initialize(**kwargs)
     FLAGS.summary()
 
-    assert FLAGS.nb_its>0
+    assert FLAGS.nb_its>=0
     assert FLAGS.attack_eps>=0
+    assert FLAGS.num_divide>=0
+    if FLAGS.attack_eps>0 and FLAGS.num_divide>0:
+        raise ValueError('Adversarial Attack and Patch Shuffle should not be used at same time')
+
+    # optional transform
+    optional_transform=[]
+    optional_transform.extend([PatchSuffle(FLAGS.num_divide)] if FLAGS.num_divide else [])
 
     # dataset
     dataset_builder = DatasetBuilder(name=FLAGS.dataset, root_path=FLAGS.dataroot)
-    test_dataset   = dataset_builder(train=False, normalize=FLAGS.normalize)
+    test_dataset   = dataset_builder(train=False, normalize=FLAGS.normalize, optional_transform=optional_transform)
     test_loader    = torch.utils.data.DataLoader(test_dataset, batch_size=FLAGS.batch_size, shuffle=False, num_workers=FLAGS.num_workers, pin_memory=True)
 
     # model (load from checkpoint) 
