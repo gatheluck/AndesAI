@@ -32,10 +32,11 @@ from andesai.config import AT_PARAMS
 @click.option('--attack', type=str, required=True)
 @click.option('--attack_norm', type=str, required=True)
 @click.option('--nb_its', type=int, default=50)
+# log
 @click.option('-s', '--suffix', type=str, default='')
 
 def main(**kwargs):
-    test_multi(**kwargs)
+    test_adv(**kwargs)
 
 def parse_weight_basename(weight_basename):
     ret_dict = dict()
@@ -71,7 +72,7 @@ def parse_weight_basename(weight_basename):
         
     return ret_dict
 
-def test_multi(**kwargs):
+def test_adv(**kwargs):
     """
     this script loads all 'weight_final_{something}.pth' files which exisits under 'kwargs.target_dir' and execute test.
     if there is exactly same file, the result becomes the mean of them.
