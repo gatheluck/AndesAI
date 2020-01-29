@@ -31,7 +31,7 @@ class DatasetBuilder(object):
         self.name = name
         self.root_path = os.path.join(root_path, self.name)
 
-    def __call__(self, train:bool, normalize:bool, binary_classification_target:int=None):
+    def __call__(self, train:bool, normalize:bool, binary_classification_target:int=None, optional_transform=[]):
         """
         Args
         - train : use train set or not.
@@ -40,7 +40,7 @@ class DatasetBuilder(object):
         """
         
         input_size = self.DATASET_CONFIG[self.name].input_size
-        transform = self._get_trainsform(self.name, input_size, train, normalize)
+        transform = self._get_transform(self.name, input_size, train, normalize, optional_transform)
         
         # get dataset
         if self.name == 'svhn':
@@ -65,7 +65,7 @@ class DatasetBuilder(object):
 
         return dataset
 
-    def _get_trainsform(self, name:str, input_size:int, train:bool, normalize:bool):
+    def _get_transform(self, name:str, input_size:int, train:bool, normalize:bool, optional_transform=[]):
         """
         input_size
         - cifar10, svhn: 32x32
@@ -91,7 +91,7 @@ class DatasetBuilder(object):
             if train:
                 transform.extend([
                     torchvision.transforms.RandomHorizontalFlip(),
-                    transforms.RandomCrop(32, 4),
+                    torchvision.transforms.RandomCrop(32, 4),
                 ])
             else:
                 pass
@@ -106,6 +106,10 @@ class DatasetBuilder(object):
             transform.extend([
                 torchvision.transforms.Normalize(mean=self.DATASET_CONFIG[name].mean, std=self.DATASET_CONFIG[name].std),
             ])
+
+        # optional
+        if optional_transform:
+            transform.extend(optional_transform)
 
         return torchvision.transforms.Compose(transform)
     
