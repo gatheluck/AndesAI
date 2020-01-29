@@ -9,6 +9,12 @@ import torch
 import torchvision
 
 class PatchSuffle(object):
+    """
+    Patch Shuffle Transformation which divides images into rectangular patches and merges them in random order. 
+    This transformation is mainly used in following papers.
+    - Interpreting Adversarially Trained Convolutional Neural Networks, Zhang+ (ICML2019)
+    - Robust Local Features for Improving the Generalization of Adversarial Training, Song+ (ICLR2020)
+    """
     def __init__(self, num_divide:int):
         assert num_divide >= 0
         self.num_divide = num_divide
@@ -20,7 +26,7 @@ class PatchSuffle(object):
         w = x.size(-1)
         dh, dw = h//self.num_divide, w//self.num_divide
         if h%self.num_divide!=0 or w%self.num_divide!=0:
-            raise ValueError
+            raise ValueError('num_divide should exactly divide input tensor into small patches.')
 
         patches = []
 
@@ -53,6 +59,7 @@ class PatchSuffle(object):
 
     def __repr__(self):
         return self.__class__.__name__ + '()'
+
 
 if __name__ == "__main__":
     from andesai.data import DatasetBuilder
