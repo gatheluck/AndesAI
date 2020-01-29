@@ -95,9 +95,13 @@ def test_adv(**kwargs):
 
     # paths
     run_dir  = '../scripts'
-    target_path = os.path.join(FLAGS.target_dir, '**/weight_final*.pth')
-    weight_paths = sorted(glob.glob(target_path, recursive=True), key=lambda x: os.path.basename(x))
-    log_path = os.path.join(FLAGS.target_dir, 'test{}.csv'.format(FLAGS.suffix))
+    if os.path.splitext(FLAGS.target_dir)[-1]!='.pth':
+        target_path = os.path.join(FLAGS.target_dir, '**/weight_final*.pth')
+        weight_paths = sorted(glob.glob(target_path, recursive=True), key=lambda x: os.path.basename(x))
+        log_path = os.path.join(FLAGS.target_dir, 'test{}.csv'.format(FLAGS.suffix))
+    else:
+        weight_paths = list(FLAGS.target_dir)
+        log_path = os.path.join(os.path.dirname(FLAGS.target_dir), 'test{}.csv'.format(FLAGS.suffix))
 
     # logging
     logger = Logger(path=log_path, mode='test', use_wandb=False, flags=FLAGS)
