@@ -20,8 +20,6 @@ class PatchSuffle(object):
         self.num_divide = num_divide
 
     def __call__(self, x:torch.tensor):
-        """
-        """
         h = x.size(-2)
         w = x.size(-1)
         dh, dw = h//self.num_divide, w//self.num_divide
