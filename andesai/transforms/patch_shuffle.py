@@ -62,7 +62,7 @@ class PatchSuffle(object):
 if __name__ == "__main__":
     from andesai.data import DatasetBuilder
 
-    optional_transform = [PatchSuffle(4)]
+    optional_transform = [PatchSuffle(1)]
 
     dataset_builder = DatasetBuilder(name='cifar10', root_path='../../data')
     test_dataset   = dataset_builder(train=False, normalize=False, optional_transform=optional_transform)
