@@ -22,17 +22,14 @@ class FourierNoise(object):
         if h%2!=0 or w%2!=0:
             raise ValueError('shape of x is invalid')
 
-        h_center = int(h/2)
-        w_center = int(w/2)
+        h_center = int(h/2)-1
+        w_center = int(w/2)-1
 
-        if (h_center-self.index_h)<0 or (w_center-self.index_w)<0:
-            raise ValueError('value of index_h or index_w is invalid')
-
-        w_real = torch.zeros(h,w).cuda()
-        w_imaginary = torch.zeros_like(w_real).cuda()
+        w_real = torch.zeros_like(x[0,:,:])
+        w_imaginary = torch.zeros_like(w_real)
 
         w_real[h_center+self.index_h, w_center+self.index_w] = 1.0
-        w_real[h_center-self.index_h, w_center-self.index_w] = 1.0
+        w_real[h_center-self.index_h+1, w_center-self.index_w+1] = 1.0
 
         w = torch.stack([w_real, w_imaginary], dim=-1)
 
@@ -49,15 +46,15 @@ class FourierNoise(object):
         return x
 
 if __name__ == '__main__':
+    #torch.multiprocessing.set_start_method('spawn')
     from andesai.data import DatasetBuilder
 
-    optional_transform = [FourierNoise(2,2,4.0)]
+    optional_transform = [FourierNoise(16,16,4.0)]
 
     dataset_builder = DatasetBuilder(name='cifar10', root_path='../../data')
     test_dataset   = dataset_builder(train=False, normalize=False, optional_transform=optional_transform)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=16, shuffle=True, num_workers=8, pin_memory=True)
     
     for x,t in test_loader:
-        print(x.shape)
         torchvision.utils.save_image(x, '../../logs/fourier_noise_test.png')
         raise NotImplementedError
