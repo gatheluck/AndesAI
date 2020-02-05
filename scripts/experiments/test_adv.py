@@ -104,7 +104,7 @@ def test_adv(**kwargs):
         weight_paths = sorted(glob.glob(target_path, recursive=True), key=lambda x: os.path.basename(x))
         log_path = os.path.join(FLAGS.target_dir, 'test{}.csv'.format(FLAGS.suffix))
     else:
-        weight_paths = list(FLAGS.target_dir)
+        weight_paths = [FLAGS.target_dir]
         log_path = os.path.join(os.path.dirname(FLAGS.target_dir), 'test{}.csv'.format(FLAGS.suffix))
 
     # logging
