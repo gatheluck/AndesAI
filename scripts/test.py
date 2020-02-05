@@ -97,7 +97,7 @@ def test(**kwargs):
     # optional transform
     optional_transform=[]
     optional_transform.extend([PatchSuffle(FLAGS.ps_num_divide)] if FLAGS.ps_num_divide else [])
-    optional_transform.extend([FourierNoise(FLAGS.fn_inxex_h, FLAGS.fn_index_w, FLAGS.fn_eps)] if FLAGS.fn_eps else [])
+    optional_transform.extend([FourierNoise(FLAGS.fn_index_h, FLAGS.fn_index_w, FLAGS.fn_eps)] if FLAGS.fn_eps else [])
     
     # dataset
     dataset_builder = DatasetBuilder(name=FLAGS.dataset, root_path=FLAGS.dataroot)
