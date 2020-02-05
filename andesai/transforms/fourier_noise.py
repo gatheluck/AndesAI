@@ -36,8 +36,8 @@ class FourierNoise(object):
         # make low frequency-centered Fourier palne
         # default Fourier palne is high frequency-centered
         # so swap 1st and 3rd quadrant and swap 2nd and 4th quadrant        
-        w_real[self.index_h-1, self.index_w-1] = 1.0
-        w_real[h-self.index_h, w-self.index_w] = 1.0
+        w_real[self._swap_quadrant(self.index_h,h), self._swap_quadrant(self.index_w,w)] = 1.0
+        w_real[self._swap_quadrant(-self.index_h,h), self._swap_quadrant(-self.index_w,w)] = 1.0
 
         w = torch.stack([w_real, w_imaginary], dim=-1)
 
@@ -52,6 +52,16 @@ class FourierNoise(object):
         x = torch.clamp(x, min=0.0, max=1.0)
 
         return x
+
+    def _swap_quadrant(self, index, max):
+        if index>0:
+            index = index-1
+        elif index<0:
+            index = max-abs(index)
+        else:
+            raise ValueError('indnex should not be 0')
+
+        return index
 
 if __name__ == '__main__':
     #torch.multiprocessing.set_start_method('spawn')
