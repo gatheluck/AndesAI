@@ -22,6 +22,7 @@ from andesai.model import ModelBuilder
 from andesai.data import DatasetBuilder
 from andesai.attacker import AttackerBuilder
 from andesai.transforms.patch_shuffle import PatchSuffle
+from andesai.transforms.fourier_noise import FourierNoise
 from andesai.evaluator import Evaluator
 
 # options
@@ -42,30 +43,62 @@ from andesai.evaluator import Evaluator
 @click.option('--attack_eps', type=float, default=0.0)
 @click.option('--nb_its', type=int, default=50)
 @click.option('--step_size', type=float, default=None)
-# optional transform
-@click.option('--num_divide', type=int, default=0, help='number of patches which is used in PatchShuffle')
+# optional transform (PatchShuffle)
+@click.option('--ps_num_divide', type=int, default=0, help='number of patches which is used in PatchShuffle')
+# optional transform (FourierNoise)
+@click.option('--fn_eps', type=float, default=0.0, help='perturbation size of Fourier Noise')
+@click.option('--fn_index_h', type=int, default=1, help='hight index of Fourier Noise')
+@click.option('--fn_index_w', type=int, default=1, help='width index of Fourier Noise')
+
 
 def main(**kwargs):
     test(**kwargs)
+
+def set_default(**kwargs):
+    DEFAULT_ARGS = {
+        'attack':None,
+        'attack_norm':None,
+        'attack_eps':0.0,
+        'nb_its':0,
+        'step_size':None,
+        'ps_num_divide':0,
+        'fn_eps':0.0,
+        'fn_index_h':1,
+        'fn_index_w':1,
+    }
+
+    for key, val in DEFAULT_ARGS.items():
+        if key not in kwargs.keys():
+            kwargs[key] = val
+
+    return kwargs
 
 def test(**kwargs):
     """
     test model on specific cost and specific adversarial perturbation.
     """
+    
+    kwargs = set_default(**kwargs)
+
     FLAGS = FlagHolder()
     FLAGS.initialize(**kwargs)
     FLAGS.summary()
 
     assert FLAGS.nb_its>=0
     assert FLAGS.attack_eps>=0
-    assert FLAGS.num_divide>=0
-    if FLAGS.attack_eps>0 and FLAGS.num_divide>0:
+    assert FLAGS.ps_num_divide>=0
+    if FLAGS.attack_eps>0 and FLAGS.ps_num_divide>0:
         raise ValueError('Adversarial Attack and Patch Shuffle should not be used at same time')
+    if FLAGS.attack_eps>0 and FLAGS.fn_eps>0:
+        raise ValueError('Adversarial Attack and Fourier Noise should not be used at same time')
+    if FLAGS.ps_num_divide>0 and FLAGS.fn_eps>0:
+        raise ValueError('Patch Shuffle and Fourier Noise should not be used at same time')
 
     # optional transform
     optional_transform=[]
-    optional_transform.extend([PatchSuffle(FLAGS.num_divide)] if FLAGS.num_divide else [])
-
+    optional_transform.extend([PatchSuffle(FLAGS.ps_num_divide)] if FLAGS.ps_num_divide else [])
+    optional_transform.extend([FourierNoise(FLAGS.fn_inxex_h, FLAGS.fn_index_w, FLAGS.fn_eps)] if FLAGS.fn_eps else [])
+    
     # dataset
     dataset_builder = DatasetBuilder(name=FLAGS.dataset, root_path=FLAGS.dataroot)
     test_dataset   = dataset_builder(train=False, normalize=FLAGS.normalize, optional_transform=optional_transform)
