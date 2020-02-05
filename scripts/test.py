@@ -55,6 +55,11 @@ def main(**kwargs):
     test(**kwargs)
 
 def set_default(**kwargs):
+    """
+    This funcition is redandant. Currently, function test is imported from other function e.g. test_fourier.py.
+    At that case, argument which is specified by click is not defined in kwargs. so we set default value here.
+    This problem might be soloved by using subprocess.  
+    """
     DEFAULT_ARGS = {
         'attack':None,
         'attack_norm':None,
