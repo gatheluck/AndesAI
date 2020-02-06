@@ -42,6 +42,9 @@ from andesai.evaluator import Evaluator
 @click.option('--lr', type=float, default=0.1, help='learning rate')
 @click.option('--wd', type=float, default=5e-4, help='weight decay')
 @click.option('--momentum', type=float, default=0.9)
+# scheduler
+@click.option('--ms', type=int, multiple=True, default=[25], help='milestones of scheduler (able to set multiple). if specify multipe values, use MultiStepLR')
+@gamma.option('--gamma', type=float, default=0.5)
 # at
 @click.option('--at', type=str, default=None)
 @click.option('--at_norm', type=str, default=None)
@@ -85,7 +88,13 @@ def train(**kwargs):
     # optimizer
     params = model.parameters() 
     optimizer = torch.optim.SGD(params, lr=FLAGS.lr, momentum=FLAGS.momentum, weight_decay=FLAGS.wd)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=25, gamma=0.5)
+    
+    # scheduler
+    assert len(FLAGS.ms)==0
+    if len(FLAGS.ms)==1:
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=FLAGS.ms[0], gamma=FLAGS.gamma)
+    else:
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=sorted(list(FLAGS.ms)), gamma=FLAGS.gamma)
 
     # attacker
     if FLAGS.at and FLAGS.at_eps>0:
